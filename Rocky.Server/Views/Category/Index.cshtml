@@ -1,0 +1,66 @@
+﻿@using Rocky.Models.Category
+@model IEnumerable<Rocky.Models.Category.CategoryDTO>
+
+@{
+    ViewBag.Title = "Category";
+}
+
+<div class="container p-3 bg-white">
+    <div class="row pt-4">
+        <div class="col-6">
+            <h2 class="text-primary">
+                @ViewBag.Title List
+            </h2>
+        </div>
+        <div class="col-6 text-end">
+            <a asp-controller="Category" asp-action="Create" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> &nbsp; Create new @ViewBag.Title
+            </a>
+        </div>
+    </div>
+    
+    <br/>
+    <br/>
+    
+    @if (Model.Any())
+    {
+        <table class="table table-bordered table-striped" style="width: 100%">
+            <thead>
+            <tr>
+                <th>
+                    @nameof(CategoryDTO.Name)
+                </th>
+                <th>
+                    @nameof(CategoryDTO.DisplayOrder)
+                </th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <th width="50%">@item.Name</th>
+                        <th width="30%">@item.DisplayOrder</th>
+                        <th class="text-center">
+                            <div class="w-75 btn-group" role="group">
+                                <a asp-controller="Category" asp-action="Edit" asp-route-Id="@item.Id"
+                                   class="btn btn-primary">
+                                    <i class="fa-regular fa-pen-to-square"></i>
+                                </a>
+                                <a asp-controller="Category" asp-action="Delete" asp-route-Id="@item.Id"
+                                   class="btn btn-danger">
+                                    <i class="fa-solid fa-trash"></i>
+                                </a>
+                            </div>
+                        </th>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p>Empty.</p>
+    }
+</div>

@@ -1,0 +1,75 @@
+﻿@using Rocky.Models.Product
+@model IEnumerable<Rocky.Models.Product.ProductDTO>
+
+@{
+    ViewBag.Title = "Product";
+}
+
+<div class="container p-3 bg-white">
+    <div class="row pt-4">
+        <div class="col-6">
+            <h2 class="text-primary">
+                @ViewBag.Title List
+            </h2>
+        </div>
+        <div class="col-6 text-end">
+            <a asp-action="Upsert" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> &nbsp; Create new @ViewBag.Title
+            </a>
+        </div>
+    </div>
+
+    <br />
+    <br />
+
+    @if (Model.Any())
+    {
+        <table class="table table-bordered table-striped" style="width: 100%">
+            <thead>
+            <tr>
+                <th>
+                    @nameof(ProductDTO.Name)
+                </th>
+                <th>
+                    @nameof(ProductDTO.Price)
+                </th>
+                <th>
+                    @nameof(ProductDTO.Category)
+                </th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var product in Model)
+            {
+                <tr>
+                    <th width="45%">@product.Name</th>
+                    <th width="15%">@product.Price</th>
+                    <th width="20%">@product.Category!.Name</th>
+                    <th class="text-center">
+                        <div class="w-75 btn-group" role="group">
+                            <a asp-action="Upsert" asp-route-Id="@product.Id" class="btn btn-primary">
+                                <i class="fa-regular fa-pen-to-square"></i>
+                            </a>
+                            <a asp-action="Delete" asp-route-Id="@product.Id" class="btn btn-danger">
+                                <i class="fa-solid fa-trash"></i>
+                            </a>
+                        </div>
+                    </th>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p>Empty.</p>
+    }
+</div>
+
+@section Scripts
+{
+    @{
+        <partial name="_ValidationScriptsPartial"/>
+    }
+}
