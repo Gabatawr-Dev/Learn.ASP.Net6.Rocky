@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Rocky.DataAccess.Contexts;
 
@@ -11,9 +12,10 @@ using Rocky.DataAccess.Contexts;
 namespace Rocky.DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230122152733_addSqFtToInquiryDetail")]
+    partial class addSqFtToInquiryDetail
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -264,8 +266,8 @@ namespace Rocky.DataAccess.Migrations
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
-                    b.Property<long>("SqFt")
-                        .HasColumnType("bigint");
+                    b.Property<int>("SqFt")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 

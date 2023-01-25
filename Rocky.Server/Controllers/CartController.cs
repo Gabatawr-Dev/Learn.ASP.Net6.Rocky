@@ -7,7 +7,6 @@ using Rocky.DataAccess.Repositories.Product;
 using Rocky.Models;
 using Rocky.Models.Cart;
 using Rocky.Models.Inquiry;
-using Rocky.Models.Product;
 using Rocky.Utility;
 
 namespace Rocky.Server.Controllers;
@@ -39,20 +38,24 @@ public class CartController : Controller
 
     public IActionResult Index()
     {
-        var idCollection = GetSessionCart
-            ?.Select(p => p.ProductId)
-            .ToList();
+        var sessionCart = GetSessionCart
+            ?.ToList() ?? new();
+        var model = new List<CartIndexModel>();
 
-        var model = idCollection == null || idCollection.Any() is false
-            ? new List<ProductDTO>()
-            : _repoProduct.GetAll(p => idCollection.Contains(p.Id))
-                .ToList();
+        foreach (var cart in sessionCart)
+        {
+            var product = _repoProduct.Find(cart.ProductId);
+            if (product == null) continue;
 
+            model.Add(new CartIndexModel
+            {
+                Product = product,
+                SqFt = cart.SqFt
+            });
+        }
+        
         return View(model);
     }
-
-    [HttpPost, ActionName(nameof(Index)), ValidateAntiForgeryToken]
-    public IActionResult IndexPost() => RedirectToAction(nameof(Summary));
 
     public IActionResult RemoveFromCart(int id)
     {
@@ -63,10 +66,15 @@ public class CartController : Controller
         if (product != null)
         {
             sessionCart!.Remove(product);
-            HttpContext.Session.Set(Const.SessionCart, sessionCart);
+            HttpContext.Session.Set(Const.SessionCartList, sessionCart);
+            TempData[Const.Success] = "Item successfully removed from cart";
+
             if (sessionCart.Any() is false)
                 return RedirectToAction("Index", "Home");
         }
+        else if (product == null)
+            TempData[Const.Error] = "Error removing item from cart";
+
         return RedirectToAction(nameof(Index));
     }
 
@@ -74,27 +82,46 @@ public class CartController : Controller
 
     #region Summary
 
-    public IActionResult Summary()
+    [HttpPost, ValidateAntiForgeryToken]
+    public IActionResult Summary(IList<CartIndexModel> modelIn)
     {
+        var sessionCart = new List<ShoppingCart>();
+        foreach (var item in modelIn)
+        {
+            var product = _repoProduct.Find(item.Product!.Id);
+            if (product == null) continue;
+            item.Product = product;
+
+            var sqft = item.SqFt is > 0 and <= 10_000 ? item.SqFt : 1;
+            item.SqFt = sqft;
+
+            sessionCart.Add(new ShoppingCart
+            {
+                ProductId = product.Id,
+                SqFt = sqft
+            });
+        }
+        HttpContext.Session.Set(Const.SessionCartList, sessionCart);
+
+        if (modelIn.Any() is false)
+        {
+            TempData[Const.Error] = "Order generation error";
+            return RedirectToAction(nameof(Index));
+        }
+
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var idCollection = GetSessionCart
-            ?.Select(p => p.ProductId)
-            .ToList();
-        
-        var model = new CartSummaryModel
+        var modelOut = new CartSummaryModel
         {
             AppAppUser = _repoAppUser.Find(userId) 
                          ?? new AppUserDTO(),
-            Products = idCollection == null || idCollection.Any() is false
-                ? new List<ProductDTO>()
-                : _repoProduct.GetAll(p => idCollection.Contains(p.Id))
-                    .ToList()
-    };
-        return View(model);
+            ItemCollection = modelIn
+        };
+
+        return View(modelOut);
     }
 
     [HttpPost, ValidateAntiForgeryToken]
-    public IActionResult Summary(CartSummaryModel model)
+    public IActionResult SummaryPost(CartSummaryModel model)
     {
         var inquiryHeader = new InquiryHeaderDTO
         {
@@ -107,24 +134,49 @@ public class CartController : Controller
         _repoInquiryHeader.Add(inquiryHeader);
         _repoInquiryHeader.SaveChanges();
 
-        foreach (var product in model.Products!)
+        foreach (var item in model.ItemCollection!)
             _repoInquiryDetail.Add(new InquiryDetailDTO
             {
                 InquiryHeaderId = inquiryHeader.Id,
-                ProductId = product.Id,
+                ProductId = item.Product!.Id,
+                SqFt = item.SqFt
             });
-        _repoInquiryDetail.SaveChanges();
 
+        _repoInquiryDetail.SaveChanges();
         HttpContext.Session.Clear();
+
+        TempData[Const.Success] = "Order created successfully";
         return RedirectToAction("Index", "Home");
     }
 
     #endregion Summary
 
+    #region Update
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public IActionResult Update(IList<CartIndexModel> modelIn)
+    {
+        var sessionCart = new List<ShoppingCart>();
+        sessionCart.AddRange(modelIn.Select(item => new ShoppingCart
+        {
+            ProductId = item.Product!.Id,
+            SqFt = item.SqFt is > 0 and <= 10_000 ? item.SqFt : 1
+        }));
+        HttpContext.Session.Set(Const.SessionCartList, sessionCart);
+
+        if (modelIn.Any() is false)
+            TempData[Const.Error] = "Error while cart update";
+        else TempData[Const.Success] = "Cart updated successfully";
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    #endregion Update
+
     #region ControllerHelpers
 
     private List<ShoppingCart>? GetSessionCart =>
-        HttpContext.Session.Get<List<ShoppingCart>>(Const.SessionCart);
+        HttpContext.Session.Get<List<ShoppingCart>>(Const.SessionCartList);
 
     #endregion ControllerHelpers
 }

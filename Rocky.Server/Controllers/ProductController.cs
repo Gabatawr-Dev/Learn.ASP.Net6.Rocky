@@ -58,6 +58,7 @@ public class ProductController : Controller
         if (ModelState.IsValid is false)
         {
             model.CategoryList ??= _repoProduct.GetCategoryDropDown();
+            TempData[Const.Error] = "Validation error";
             return View(model);
         }
 
@@ -80,11 +81,13 @@ public class ProductController : Controller
             else model.Product.Image = dbProduct.Image;
 
             _repoProduct.Update(model.Product);
+            TempData[Const.Success] = "Product edited successfully";
         }
         else
         {
             UpsertImage(model.Product, file!);
             _repoProduct.Add(model.Product);
+            TempData[Const.Success] = "Product created successfully";
         }
         _repoProduct.SaveChanges();
 
@@ -136,6 +139,7 @@ public class ProductController : Controller
         _repoProduct.Remove(model);
         _repoProduct.SaveChanges();
 
+        TempData[Const.Success] = "Product deleted successfully";
         return RedirectToAction(nameof(Index));
     }
 

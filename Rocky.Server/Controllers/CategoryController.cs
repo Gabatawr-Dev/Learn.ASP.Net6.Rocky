@@ -36,11 +36,15 @@ public class CategoryController : Controller
     public IActionResult Create(CategoryDTO model)
     {
         if (ModelState.IsValid is false)
+        {
+            TempData[Const.Error] = "Error while creating category";
             return View(model);
+        }
 
         _repoCategory.Add(model);
         _repoCategory.SaveChanges();
 
+        TempData[Const.Success] = "Category created successfully";
         return RedirectToAction(nameof(Index));
     }
 
@@ -56,6 +60,7 @@ public class CategoryController : Controller
         var model = _repoCategory.Find(id);
         if (model == null)
             return NotFound();
+
         return View(model);
     }
 
@@ -63,11 +68,15 @@ public class CategoryController : Controller
     public IActionResult Edit(CategoryDTO model)
     {
         if (ModelState.IsValid is false)
+        {
+            TempData[Const.Error] = "Error while editing category";
             return View(model);
+        }
 
         _repoCategory.Update(model);
         _repoCategory.SaveChanges();
 
+        TempData[Const.Success] = "Category edited successfully";
         return RedirectToAction(nameof(Index));
     }
 
@@ -83,6 +92,7 @@ public class CategoryController : Controller
         var model = _repoCategory.Find(id);
         if (model == null)
             return NotFound();
+
         return View(model);
     }
 
@@ -99,6 +109,7 @@ public class CategoryController : Controller
         _repoCategory.Remove(model);
         _repoCategory.SaveChanges();
 
+        TempData[Const.Success] = "Category deleted successfully";
         return RedirectToAction(nameof(Index));
     }
 

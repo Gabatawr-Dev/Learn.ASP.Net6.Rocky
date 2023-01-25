@@ -54,6 +54,7 @@ public class Repository<T> : IRepository<T> where T : class
     public void Add(T entity) => Set.Add(entity);
 
     public void Remove(T entity) => Set.Remove(entity);
+    public void RemoveRange(IEnumerable<T> entities) => Set.RemoveRange(entities);
 
     public void Update(T entity, params string[] properties)
     {

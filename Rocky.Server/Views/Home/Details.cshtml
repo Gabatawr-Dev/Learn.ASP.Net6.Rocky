@@ -29,6 +29,13 @@
                                         <h3 class="text-success"></h3>
                                         <p class="text-secondary">@Html.Raw(Model.Product.Description)</p>
                                     </div>
+                                    <div class="col-12">
+                                        SqFt:
+                                        @if (Model.IsExistInCard)
+                                        {<input asp-for="TempSqFt" class="form-control" disabled />}
+                                        else{<input asp-for="TempSqFt" class="form-control" /> }
+                                        <span asp-validation-for="TempSqFt" class="text-danger"></span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -64,3 +71,10 @@
         </div>
     </form>
 </div>
+
+@section Scripts
+{
+    @{
+        <partial name="_ValidationScriptsPartial"/>
+    }
+}

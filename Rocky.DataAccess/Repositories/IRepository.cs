@@ -19,6 +19,7 @@ public interface IRepository<T> where T : class
 
     void Add(T entity);
     void Remove(T entity);
+    void RemoveRange(IEnumerable<T> entities);
 
     /// <param name="properties">Only for untracked entities!</param>
     void Update(T entity, params string[] properties);

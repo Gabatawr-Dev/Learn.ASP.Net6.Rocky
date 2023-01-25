@@ -4,7 +4,7 @@
 
 @{
     var carts = _httpContextAccessor.HttpContext!.Session
-        .Get<IEnumerable<ShoppingCart>>(Const.SessionCart);
+        .Get<IEnumerable<ShoppingCart>>(Const.SessionCartList);
 }
 
 <!DOCTYPE html>
@@ -20,6 +20,7 @@
     <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote.min.css" >
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
     <link rel="stylesheet" href="//cdn.syncfusion.com/ej2/20.4.38/material.css">
+    <link rel="stylesheet" href="//cdn.datatables.net/1.13.1/css/jquery.dataTables.min.css">
 </head>
 <body>
     <header>
@@ -50,6 +51,14 @@
                                     <a asp-area="Identity" asp-page="/Account/Register" class="dropdown-item">Create Admin User</a>
                                 </ul>
                             </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Order/Inquiry Management
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                    <a asp-controller="Inquiry" asp-action="Index" class="dropdown-item">Inquiry</a>
+                                </ul>
+                            </li>
                         } 
                         <li class="nav-item">
                             @if (carts is not null)
@@ -73,6 +82,7 @@
     </header>
     <div class="container">
         <main role="main" class="pb-3">
+            <partial name="_Notifycations"/>
             @RenderBody()
         </main>
     </div>
@@ -89,8 +99,8 @@
 
     <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="//cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
-    <script src="//cdn.syncfusion.com/ej2/20.4.38/dist/ej2.min.js"></script>
+<script src="//cdn.syncfusion.com/ej2/20.4.38/dist/ej2.min.js"></script>
+    <script src="//cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js"></script>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

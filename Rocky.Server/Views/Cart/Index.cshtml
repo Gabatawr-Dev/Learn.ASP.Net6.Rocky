@@ -1,7 +1,7 @@
 ﻿@using Rocky.Utility
-@model List<Rocky.Models.Product.ProductDTO>
+@model List<Rocky.Models.Cart.CartIndexModel>
 
-<form method="post">
+<form method="post" asp-action="Summary">
     <br />
     <div class="backgroundWhiteBorder">
         <div class="container row">
@@ -23,11 +23,17 @@
                             <div class="row" style="color:#821f3d">
                                 <div class="col-lg-2">
                                 </div>
-                                <div class="col-12 col-lg-7">
+                                <div class="col-12 col-lg-3">
                                     Product Details
                                 </div>
                                 <div class="col-12 col-lg-2">
                                     Price per sqft
+                                </div>
+                                <div class="col-12 col-lg-2">
+                                    SqFt
+                                </div>
+                                <div class="col-12 col-lg-2">
+                                    Total Price
                                 </div>
                                 <div class="col-6 col-sm-4 col-lg-1">
                                 </div>
@@ -35,32 +41,54 @@
                         </div>
 
                         <hr />
-                            @foreach (var product in Model)
-                            {
-                                <div class="row h-100">
-                                    <div class="col-4 col-md-2 text-center py-2">
-                                        <img src="@Const.ProductImages@product.Image" class="rounded" width="100%" />
-                                    </div>
-                                    <div class="col-8 col-lg-7">
-                                        <h5>@product.Name</h5>
-                                    <div style="font-size:11px;">@Html.Raw(product.ShortDescription)</div>
-                                    </div>
-                                    <div class="col-3 col-lg-2 pt-lg-4" style="font-size:11px;">
-                                    <span style="font-size:17px;">@product.Price.ToString("c")</span>/ sqft
+                        @{ var totalPrice = 0d;}
+                        @for (var i = 0; i < Model.Count; i++)
+                        {
+                            var productPrice = Model[i].Product!.Price * Model[i].SqFt;
+                            totalPrice += productPrice;
 
-                                    </div> 
-                                    <div class="col-2 col-lg-1 p-0 pt-lg-4 text-center">
-                                        <a asp-action="RemoveFromCart" asp-route-id="@product.Id" class="btn btn-outline-danger">
-                                            <i class="fas fa-trash"></i>
-                                        </a>
+                            <input asp-for="@Model[i].Product!.Id}" hidden />
+                            <div class="row h-100">
+                                <div class="col-4 col-md-2 text-center py-2">
+                                    <img src="@Const.ProductImages@Model[i].Product!.Image" class="rounded" width="100%" />
+                                </div>
+                                <div class="col-8 col-lg-3">
+                                    <h5>@Model[i].Product!.Name</h5>
+                                    <div style="font-size: 11px;">
+                                        @Html.Raw(Model[i].Product!.ShortDescription)
                                     </div>
                                 </div>
-                            }
+                                <div class="col-3 col-lg-2 pt-lg-4" style="font-size:11px;">
+                                    <span class="ipricepersqft-@i" style="font-size:17px;">@Model[i].Product!.Price.ToString("c")</span>
+                                </div>
+                                <div class="col-3 col-lg-2 pt-lg-4" style="font-size: 11px;">
+                                    <input asp-for="@Model[i].SqFt" class="iinputsqft-@i form-control"/>
+                                </div> 
+                                <div class="col-3 col-lg-2 pt-lg-4" style="font-size:11px;">
+                                    <span class="iprice-@i" style="font-size:17px;">@productPrice.ToString("c")</span>
+                                </div> 
+                                <div class="col-2 col-lg-1 p-0 pt-lg-4 text-center">
+                                    <a asp-action="RemoveFromCart" asp-route-id="@Model[i].Product.Id" class="btn btn-outline-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        }
                         <hr />
+                        <div class="row">
+                            <div class="itotalprice col-12 text-end pe-4" style="color: #821f3d">
+                                Order Total: @totalPrice.ToString("c")
+                            </div>
+                        </div>
                     </div>
                     <div class="card-footer">
-                        <div class="row">
-                            <div class="col-6 col-md-3 offset-md-9">
+                        <div class="row justify-content-end">
+                            <div class="col-6 col-md-3 mt-3">
+                                <button asp-action="Update" type="submit" class="btn btn-primary form-control ">
+                                    <span>Update</span>
+                                </button>
+                            </div>
+                            <div class="col-6 col-md-3 mt-3">
                                 <button type="submit" class="btn btn-success form-control ">
                                     <span>Continue</span>
                                 </button>
@@ -72,3 +100,43 @@
         </div>
     </div>
 </form>
+
+@section Scripts
+{
+    @{
+        <partial name="_ValidationScriptsPartial"/>
+    }
+    <script type="text/javascript">
+        const pricesPerSqFt = $('span[class^=ipricepersqft-');
+        const inputs = $('input[class^=iinputsqft-');
+        const prices = $('span[class^=iprice-');
+        const totalPrice = $('.itotalprice');
+
+        const formatter = new Intl.NumberFormat(navigator.language, {
+            style: 'currency',
+            currency: 'USD',
+        });
+
+        for (let i = 0; i < inputs.length; i++) {
+            inputs[i].addEventListener('change', (event) => {
+                
+                if (event.target.value <= 0) {
+                    inputs[i].value = 1;
+                    return;
+                }
+                let newPrice = event.target.value * parseFloat(pricesPerSqFt[i].textContent);
+                prices[i].textContent = formatter.format(newPrice);
+
+                var newTotalPrice = 0;
+                for (let j = 0; j < prices.length; j++) {
+                    let normPriceString = prices[j].textContent.replace(/[^0-9.,-]+/g, '');
+                    newTotalPrice += parseFloat(normPriceString);
+                }
+
+                let newTotalPriceString = formatter.format(newTotalPrice);
+                totalPrice.html(`Order Total: ${newTotalPriceString}`);
+            });
+        }
+
+    </script>
+}

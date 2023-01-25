@@ -20,4 +20,8 @@ public class InquiryDetailDTO
 
     [ForeignKey(nameof(ProductId))]
     public ProductDTO? Product { get; set; }
+
+    [Required]
+    [Range(1, 10_000)]
+    public uint SqFt { get; set;}
 }

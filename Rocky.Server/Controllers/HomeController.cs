@@ -58,13 +58,18 @@ public class HomeController : Controller
     }
 
     [HttpPost, ValidateAntiForgeryToken]
-    public IActionResult AddToCart(int id)
+    public IActionResult AddToCart(HomeDetailsModel model)
     {
         var sessionCart = GetSessionCart
             ?.ToList() ?? new List<ShoppingCart>();
-        sessionCart.Add(new ShoppingCart { ProductId = id });
-        HttpContext.Session.Set(Const.SessionCart, sessionCart);
+        sessionCart.Add(new ShoppingCart
+        {
+            ProductId = model.Product.Id,
+            SqFt = model.TempSqFt
+        });
+        HttpContext.Session.Set(Const.SessionCartList, sessionCart);
 
+        TempData[Const.Success] = "Item successfully added to cart";
         return RedirectToAction(nameof(Index));
     }
 
@@ -77,15 +82,17 @@ public class HomeController : Controller
         if (product != null)
         {
             sessionCart!.Remove(product);
-            HttpContext.Session.Set(Const.SessionCart, sessionCart);
+            HttpContext.Session.Set(Const.SessionCartList, sessionCart);
         }
+
+        TempData[Const.Success] = "Item successfully removed from cart";
         return RedirectToAction(nameof(Index));
     }
 
     #region DetailsHelpers
 
     private List<ShoppingCart>? GetSessionCart =>
-        HttpContext.Session.Get<List<ShoppingCart>>(Const.SessionCart);
+        HttpContext.Session.Get<List<ShoppingCart>>(Const.SessionCartList);
 
     #endregion DetailsHelpers
 

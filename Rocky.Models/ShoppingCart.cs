@@ -3,5 +3,6 @@
 public class ShoppingCart
 {
     public int ProductId { get; set; }
+    public uint SqFt { get; set; }
 }
 

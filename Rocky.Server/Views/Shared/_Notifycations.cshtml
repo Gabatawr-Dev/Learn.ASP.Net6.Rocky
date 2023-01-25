@@ -1,0 +1,29 @@
+﻿@using Rocky.Utility
+
+@if (TempData.ContainsKey(Const.Success) || TempData.ContainsKey(Const.Error))
+{
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+
+    <script type="text/javascript">
+        toastr.options = {
+            "progressBar": true,
+            "positionClass": "toast-bottom-right",
+        };
+    </script>
+
+    @if (TempData.ContainsKey(Const.Success))
+    {
+        <script type="text/javascript">
+            toastr.success('@TempData[Const.Success]');
+        </script>
+    } 
+    else if (TempData.ContainsKey(Const.Error))
+    {
+        <script type="text/javascript">
+            toastr.error('@TempData[Const.Error]');
+        </script>
+    }
+}
+
+
